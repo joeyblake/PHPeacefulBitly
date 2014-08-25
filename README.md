@@ -1,7 +1,7 @@
 PHPeacefulBitly
 ===============
 
-An almost featured peaceful bit.ly API wrapper for PHP. Including oAuth endpoint.
+An *almost* fully featured, bit.ly API wrapper for PHP. Including oAuth endpoint.
 Rolled up into a Simple Bitly object, minimal configuration. 
 
 Enjoy, ask questions, add to it, thanks. All available api functions are in order appearing [here](http://dev.bitly.com/api.html)
