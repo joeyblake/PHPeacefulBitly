@@ -16,7 +16,7 @@ class Bitly {
   /**
    * The OAuth token URL
    */
-  const API_OAUTH_TOKEN_URL = 'https://api-ssl.bit.ly/oauth/';
+  const API_OAUTH_TOKEN_URL = 'https://api-ssl.bit.ly/oauth/access_token';
 
   /**
    * The bitly authorization URL
@@ -411,23 +411,6 @@ class Bitly {
    * http://dev.bitly.com/user_metrics.html
    */
 
-  function bitly_oauth_access_token($code, $redirect) {
-    $results = array();
-    $url = bitly_oauth_access_token . "access_token";
-    $params = array();
-    $params['client_id'] = bitly_clientid;
-    $params['client_secret'] = bitly_secret;
-    $params['code'] = $code;
-    $params['redirect_uri'] = $redirect;
-    $output = bitly_post_curl($url, $params);
-    $parts = explode('&', $output);
-    foreach ($parts as $part) {
-      $bits = explode('=', $part);
-      $results[$bits[0]] = $bits[1];
-    }
-    return $results;
-  }
-
   function user_clicks($days = 7) {
     $results = array();
     $output = $this->_makeCall('user/clicks', true, array('days' => $days) );
@@ -645,6 +628,25 @@ class Bitly {
     /*/v3/user/tracking_domain_shorten_counts */
     
   }
+  
+  /**
+   * Get the OAuth data of a user by the returned callback code
+   *
+   * @param string $code                  OAuth2 code variable (after a successful login)
+   * @param boolean [optional] $token     If it's true, only the access token will be returned
+   * @return mixed
+   */
+  public function getOAuthToken($code, $token = false) {
+    $apiData = array(
+      'client_id'       => $this->getApiKey(),
+      'client_secret'   => $this->getApiSecret(),
+      'redirect_uri'    => $this->getApiCallback(),
+      'code'            => $code
+    );
+    
+    $result = $this->_makeOAuthCall($apiData);
+    return (false === $token) ? $result : $result->access_token;
+  }
 
   private function _makeCall($function, $auth = false, $params = null, $method = 'GET') {
     if (false === $auth) {
@@ -666,7 +668,6 @@ class Bitly {
     }
     
     $apiCall = self::API_URL . $function . $authMethod . (('GET' === $method) ? $paramString : null);
-    
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $apiCall);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json'));
